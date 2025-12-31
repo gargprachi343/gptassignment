@@ -5,9 +5,10 @@ import RoleBadge from '../auth/RoleBadge';
 /**
  * Sidebar navigation component (similar to FoodMeal design)
  */
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, onClose, activeItem, onMenuClick }) => {
   const { role, logout } = useAuth();
-  const [activeItem, setActiveItem] = useState('Dashboard');
+  const [activeItemLocal, setActiveItemLocal] = useState('Dashboard');
+  const currentActive = activeItem !== undefined ? activeItem : activeItemLocal;
 
   const handleLogout = async () => {
     await logout();
@@ -15,7 +16,10 @@ const Sidebar = ({ isOpen, onClose }) => {
   };
 
   const handleMenuClick = (label) => {
-    setActiveItem(label);
+    setActiveItemLocal(label);
+    if (onMenuClick) {
+      onMenuClick(label);
+    }
     // Scroll to top when switching views
     window.scrollTo({ top: 0, behavior: 'smooth' });
     // Close sidebar on mobile after selection
@@ -98,13 +102,13 @@ const Sidebar = ({ isOpen, onClose }) => {
                   className={`
                     w-full flex items-center space-x-2 lg:space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg
                     transition-colors duration-200 text-sm lg:text-base
-                    ${activeItem === item.id
+                    ${currentActive === item.id
                       ? 'bg-secondary-orange-light text-secondary-orange-dark font-medium'
                       : 'text-white hover:bg-primary-red-dark'
                     }
                   `}
                   aria-label={item.label}
-                  aria-current={activeItem === item.id ? 'page' : undefined}
+                  aria-current={currentActive === item.id ? 'page' : undefined}
                 >
                   <span className="text-lg lg:text-xl">{item.icon}</span>
                   <span>{item.label}</span>
