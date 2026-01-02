@@ -1,51 +1,30 @@
-const axios = require('axios');
-
-const API_BASE_URL = 'http://localhost:5001/api';
+const mongoose = require('mongoose');
+const User = require('./models/User');
 
 async function seedUsers() {
-  try {
-    console.log('🌱 Seeding test users...\n');
+  await mongoose.connect('mongodb://127.0.0.1:27017/event_management');
 
-    const testUsers = [
-      {
-        name: 'Prachi Garg',
-        email: 'prachi.garg@example.com',
-        password: 'password123',
-        passwordConfirm: 'password123',
-      },
-      {
-        name: 'Devesh Kumar',
-        email: 'devesh.kumar@example.com',
-        password: 'password123',
-        passwordConfirm: 'password123',
-      },
-      {
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: 'admin123',
-        passwordConfirm: 'admin123',
-      },
-    ];
+  // 🔥 IMPORTANT: delete old broken users
+  await User.deleteMany({
+    email: { $in: ['prachi.garg@example.com', 'admin@example.com'] }
+  });
 
-    for (const user of testUsers) {
-      try {
-        const response = await axios.post(`${API_BASE_URL}/auth/register`, user);
-        console.log(`✅ Created user: ${user.email}`);
-      } catch (error) {
-        if (error.response && error.response.status === 409) {
-          console.log(`⚠️  User already exists: ${user.email}`);
-        } else {
-          console.error(`❌ Failed to create user ${user.email}:`, error.response?.data?.message || error.message);
-        }
-      }
-    }
+  await User.create({
+    name: 'Prachi Garg',
+    email: 'prachi.garg@example.com',
+    password: 'password123', // ✅ plain
+    role: 'user'
+  });
 
-    console.log('\n✨ Done!');
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ Error:', error.message);
-    process.exit(1);
-  }
+  await User.create({
+    name: 'Admin User',
+    email: 'admin@example.com',
+    password: 'admin123', // ✅ plain
+    role: 'admin'
+  });
+
+  console.log('✅ Users seeded correctly');
+  process.exit(0);
 }
 
 seedUsers();
