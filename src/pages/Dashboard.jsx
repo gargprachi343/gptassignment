@@ -19,7 +19,7 @@ import { getUpcomingEventsCount, getPastEventsCount, getThisMonthEventsCount, ge
 const Dashboard = () => {
   const { isAdmin } = useAuth();
   const { isDarkMode } = useTheme();
-  const { events, loading, error, filters, updateFilters, deleteEvent } = useEvents();
+  const { events, loading, error, filters, updateFilters, deleteEvent, toggleFavorite } = useEvents();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState('Dashboard');
@@ -90,7 +90,7 @@ const Dashboard = () => {
               </div>
             )}
 
-            <EventList events={filteredEvents} loading={loading} onDelete={deleteEvent} />
+            <EventList events={filteredEvents} loading={loading} onDelete={deleteEvent} onToggleFavorite={toggleFavorite} />
 
             {isAdmin && (
               <div className="xl:hidden mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -130,7 +130,7 @@ const Dashboard = () => {
                 <p className="text-sm text-red-800 font-medium">{error}</p>
               </div>
             )}
-            <EventList events={filteredEvents} loading={loading} onDelete={deleteEvent} />
+            <EventList events={filteredEvents} loading={loading} onDelete={deleteEvent} onToggleFavorite={toggleFavorite} />
           </>
         )}
 

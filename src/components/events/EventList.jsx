@@ -3,7 +3,7 @@ import EventCard from './EventCard';
 import Loader from '../common/Loader';
 import EmptyState from '../common/EmptyState';
 
-const EventList = ({ events, loading, onDelete }) => {
+const EventList = ({ events, loading, onDelete, onToggleFavorite }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12" role="status" aria-live="polite">
@@ -23,7 +23,13 @@ const EventList = ({ events, loading, onDelete }) => {
       aria-label="Events list"
     >
       {events.map((event) => (
-        <EventCard key={event.id} event={event} onDelete={onDelete} />
+        <EventCard 
+          key={event.id} 
+          event={event} 
+          onDelete={onDelete}
+          onToggleFavorite={onToggleFavorite}
+          isFavorite={event.isFavorite}
+        />
       ))}
     </div>
   );

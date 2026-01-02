@@ -4,10 +4,11 @@ import useTheme from '../../hooks/useTheme';
 import { formatDate, isPastDate } from '../../utils/dateUtils';
 import Icon from '../common/Icon';
 
-const EventCard = ({ event, onDelete }) => {
+const EventCard = ({ event, onDelete, onToggleFavorite, isFavorite }) => {
   const { isAdmin } = useAuth();
   const { isDarkMode } = useTheme();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   const handleDelete = async () => {
     if (!window.confirm(`Are you sure you want to delete "${event.title}"?`)) {
@@ -21,6 +22,18 @@ const EventCard = ({ event, onDelete }) => {
       console.error('Delete error:', error);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleToggleFavorite = async (e) => {
+    e.stopPropagation();
+    setIsTogglingFavorite(true);
+    try {
+      await onToggleFavorite(event.id);
+    } catch (error) {
+      console.error('Toggle favorite error:', error);
+    } finally {
+      setIsTogglingFavorite(false);
     }
   };
 
@@ -62,28 +75,47 @@ const EventCard = ({ event, onDelete }) => {
         >
           {event.title}
         </h3>
-        {isAdmin && (
+        <div className="flex gap-1 ml-2">
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete();
-            }}
-            disabled={isDeleting}
-            className={`ml-2 focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 disabled:opacity-50 transition-colors ${
+            onClick={handleToggleFavorite}
+            disabled={isTogglingFavorite}
+            className={`focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded p-1 disabled:opacity-50 transition-colors ${
               isDarkMode
-                ? 'text-red-400 hover:text-red-300'
-                : 'text-red-600 hover:text-red-800'
+                ? isFavorite ? 'text-yellow-400' : 'text-gray-500 hover:text-yellow-300'
+                : isFavorite ? 'text-yellow-500' : 'text-gray-400 hover:text-yellow-500'
             }`}
-            aria-label={`Delete event: ${event.title}`}
-            title="Delete event"
+            aria-label={`${isFavorite ? 'Remove from' : 'Add to'} favorites: ${event.title}`}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
-            {isDeleting ? (
+            {isTogglingFavorite ? (
               <Icon name="loading" className="w-5 h-5" />
             ) : (
-              <Icon name="delete" className="w-5 h-5" />
+              <span className="text-lg">{isFavorite ? '⭐' : '☆'}</span>
             )}
           </button>
-        )}
+          {isAdmin && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete();
+              }}
+              disabled={isDeleting}
+              className={`focus:outline-none focus:ring-2 focus:ring-red-500 rounded p-1 disabled:opacity-50 transition-colors ${
+                isDarkMode
+                  ? 'text-red-400 hover:text-red-300'
+                  : 'text-red-600 hover:text-red-800'
+              }`}
+              aria-label={`Delete event: ${event.title}`}
+              title="Delete event"
+            >
+              {isDeleting ? (
+                <Icon name="loading" className="w-5 h-5" />
+              ) : (
+                <Icon name="delete" className="w-5 h-5" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={`space-y-2 text-sm ${

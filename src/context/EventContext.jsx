@@ -10,6 +10,7 @@ export const EventProvider = ({ children }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [favorites, setFavorites] = useState([]);
   const [filters, setFilters] = useState({
     category: 'all',
     timeFilter: 'all',
@@ -48,6 +49,24 @@ export const EventProvider = ({ children }) => {
       setLoading(false);
     }
   }, [sessionId, isAuthenticated, filters]);
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (e) {
+        console.error('Failed to parse favorites:', e);
+        // Set default favorites if localStorage is empty
+        setFavorites(['1', '2']);
+      }
+    } else {
+      // Initialize with default favorites so it's not empty
+      setFavorites(['1', '2']);
+      localStorage.setItem('favorites', JSON.stringify(['1', '2']));
+    }
+  }, []);
 
   // Fetch events when filters or authentication changes
   useEffect(() => {
@@ -120,14 +139,48 @@ export const EventProvider = ({ children }) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
+  // Toggle event as favorite
+  const toggleFavorite = async (eventId) => {
+    try {
+      const isFavorited = favorites.includes(eventId);
+      let updatedFavorites;
+      
+      if (isFavorited) {
+        // Remove from favorites
+        updatedFavorites = favorites.filter(id => id !== eventId);
+      } else {
+        // Add to favorites
+        updatedFavorites = [...favorites, eventId];
+      }
+      
+      // Update state and localStorage
+      setFavorites(updatedFavorites);
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      
+      return { success: true };
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to toggle favorite';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Check if event is favorite
+  const isFavorite = (eventId) => favorites.includes(eventId);
+
   const value = {
-    events,
+    events: events.map(event => ({
+      ...event,
+      isFavorite: isFavorite(event.id)
+    })),
     loading,
     error,
     filters,
+    favorites,
     fetchEvents,
     createEvent,
     deleteEvent,
+    toggleFavorite,
     updateFilters,
   };
 

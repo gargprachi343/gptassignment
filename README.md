@@ -118,6 +118,18 @@ Admin-only event creation
 
 Admin-only delete with confirmation
 
+⭐ Click the star icon to add/remove events from favorites
+
+Favorites
+
+All favorited events appear in the Favorites section
+
+Favorites are saved to localStorage and persist across sessions
+
+Users can unfavorite events by clicking the star again
+
+Pre-populated with 2 favorite events on first load
+
 UI
 
 Three-column layout (sidebar, main content, stats panel)
@@ -127,6 +139,8 @@ Sidebar navigation with active state
 Top bar with search input and notification icons
 
 Responsive layout for smaller screens
+
+Star buttons on all event cards for quick favoriting
 
 Mock Data
 

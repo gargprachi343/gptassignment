@@ -3,7 +3,7 @@ import useEvents from '../../hooks/useEvents';
 import EventCard from '../events/EventCard';
 
 const FavoritesView = () => {
-  const { events } = useEvents();
+  const { events, toggleFavorite, deleteEvent } = useEvents();
   const favorites = events.filter(e => e.isFavorite);
 
   return (
@@ -19,12 +19,18 @@ const FavoritesView = () => {
         <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300 shadow-sm">
           <div className="text-6xl mb-4 opacity-50">⭐</div>
           <p className="text-gray-600 text-xl font-medium">No favorite events yet</p>
-          <p className="text-gray-500 text-sm mt-2">Star events to save them here</p>
+          <p className="text-gray-500 text-sm mt-2">Click the star icon on events to save them here</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {favorites.map(event => (
-            <EventCard key={event.id} event={event} />
+            <EventCard 
+              key={event.id} 
+              event={event} 
+              onDelete={deleteEvent}
+              onToggleFavorite={toggleFavorite}
+              isFavorite={event.isFavorite}
+            />
           ))}
         </div>
       )}
