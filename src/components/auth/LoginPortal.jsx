@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import useAuth from '../../hooks/useAuth';
 import Button from '../common/Button';
+import Input from '../common/Input';
 import Loader from '../common/Loader';
 
-/**
- * Login portal component for admin and user role selection
- */
 const LoginPortal = () => {
   const { login } = useAuth();
-  const [selectedRole, setSelectedRole] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState('user');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!selectedRole) {
-      setError('Please select a role');
+    if (!email || !password) {
+      setError('Please enter email and password');
       return;
     }
 
@@ -24,11 +24,14 @@ const LoginPortal = () => {
     setError(null);
 
     try {
-      const result = await login(selectedRole);
+      console.log('Attempting login with:', { email, password, selectedRole });
+      const result = await login(email, password, selectedRole);
+      console.log('Login result:', result);
       if (!result.success) {
         setError(result.error || 'Login failed');
       }
     } catch (err) {
+      console.error('Login catch error:', err);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -40,14 +43,51 @@ const LoginPortal = () => {
       <div className="max-w-md w-full bg-white rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Events Management</h1>
-          <p className="text-sm sm:text-base text-gray-600">Select your role to continue</p>
+          <p className="text-sm sm:text-base text-gray-600">Login to your account</p>
         </div>
         
         <form onSubmit={handleSubmit} noValidate>
           <div className="space-y-4">
+            {/* Email Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError(null);
+                }}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            {/* Password Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <Input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError(null);
+                }}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Choose Your Role
+                Login as
               </label>
               <div className="space-y-2 sm:space-y-3">
                 <label
@@ -66,21 +106,13 @@ const LoginPortal = () => {
                     name="role"
                     value="user"
                     checked={selectedRole === 'user'}
-                    onChange={(e) => {
-                      setSelectedRole(e.target.value);
-                      setError(null);
-                    }}
+                    onChange={(e) => setSelectedRole(e.target.value)}
                     className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-secondary-orange focus:ring-secondary-orange flex-shrink-0"
                     aria-label="User role"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm sm:text-base text-gray-900">User</div>
-                    <div className="text-xs sm:text-sm text-gray-600">View and filter events</div>
-                  </div>
-                  <div className="ml-2 sm:ml-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-secondary-orange-light flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-secondary-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
+                    <div className="text-xs sm:text-sm text-gray-600">Regular user access</div>
                   </div>
                 </label>
                 
@@ -100,35 +132,38 @@ const LoginPortal = () => {
                     name="role"
                     value="admin"
                     checked={selectedRole === 'admin'}
-                    onChange={(e) => {
-                      setSelectedRole(e.target.value);
-                      setError(null);
-                    }}
+                    onChange={(e) => setSelectedRole(e.target.value)}
                     className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5 text-secondary-orange focus:ring-secondary-orange flex-shrink-0"
                     aria-label="Admin role"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm sm:text-base text-gray-900">Admin</div>
-                    <div className="text-xs sm:text-sm text-gray-600">Full access - Create, edit, and delete events</div>
-                  </div>
-                  <div className="ml-2 sm:ml-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-red-light flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-primary-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
+                    <div className="text-xs sm:text-sm text-gray-600">Admin access</div>
                   </div>
                 </label>
               </div>
             </div>
 
+            {/* Error Message */}
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md" role="alert">
                 <p className="text-sm text-red-800">{error}</p>
               </div>
             )}
 
+            {/* Test Credentials Info */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-xs sm:text-sm text-blue-800">
+                <strong>Test Credentials:</strong><br/>
+                User: prachi.garg@example.com / password123<br/>
+                Admin: admin@example.com / admin123
+              </p>
+            </div>
+
+            {/* Submit Button */}
             <Button
               type="submit"
-              disabled={loading || !selectedRole}
+              disabled={loading || !email || !password}
               className="w-full"
               size="lg"
             >

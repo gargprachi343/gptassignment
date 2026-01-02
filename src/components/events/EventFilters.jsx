@@ -1,9 +1,6 @@
 import React from 'react';
 import { CATEGORIES, TIME_FILTERS } from '../../utils/constants';
 
-/**
- * Event filters component for category and time filtering
- */
 const EventFilters = ({ filters, onFilterChange }) => {
   const handleCategoryChange = (e) => {
     onFilterChange({ category: e.target.value });

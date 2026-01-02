@@ -3,9 +3,6 @@ import EventCard from './EventCard';
 import Loader from '../common/Loader';
 import EmptyState from '../common/EmptyState';
 
-/**
- * Event list component that displays events in a grid
- */
 const EventList = ({ events, loading, onDelete }) => {
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { STORAGE_KEYS, ROLES } from '../utils/constants';
-import { authService } from '../services/authService';
+import authService from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -33,13 +33,21 @@ export const AuthProvider = ({ children }) => {
     verifySession();
   }, [sessionId, role, setSessionId, setRole]);
 
-  const login = async (selectedRole) => {
+  const login = async (email, password, selectedRole) => {
     try {
-      const response = await authService.login(selectedRole);
-      const { sessionId: newSessionId, role: newRole } = response;
+      // Use actual credentials provided by user
+      const response = await authService.login(email, password);
       
-      setSessionId(newSessionId);
-      setRole(newRole);
+      if (!response.success) {
+        return { success: false, error: response.message };
+      }
+
+      // Store token and session info
+      const token = response.token;
+      const user = response.user;
+      
+      setSessionId(token);
+      setRole(user.role);
 
       return { success: true };
     } catch (error) {

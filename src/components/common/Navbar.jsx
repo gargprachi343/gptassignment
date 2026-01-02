@@ -3,15 +3,11 @@ import useAuth from '../../hooks/useAuth';
 import RoleBadge from '../auth/RoleBadge';
 import Button from './Button';
 
-/**
- * Navbar component with logo, role badge, and logout button
- */
 const Navbar = () => {
   const { role, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
-    // Force page reload to ensure clean state
     window.location.reload();
   };
 

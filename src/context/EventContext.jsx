@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
 import useAuth from '../hooks/useAuth';
 import { eventsService } from '../services/eventsService';
+import mongoService from '../services/mongoService';
 
 export const EventContext = createContext();
 
@@ -25,11 +26,24 @@ export const EventProvider = ({ children }) => {
     setError(null);
 
     try {
-      const data = await eventsService.getEvents(sessionId, filters);
-      setEvents(data);
+      // Try to fetch from MongoDB first
+      const mongoEvents = await mongoService.getEvents(filters);
+      if (mongoEvents && mongoEvents.length > 0) {
+        setEvents(mongoEvents);
+      } else {
+        // Fallback to eventsService
+        const data = await eventsService.getEvents(sessionId, filters);
+        setEvents(data);
+      }
     } catch (err) {
-      setError(err.message || 'Failed to fetch events');
-      setEvents([]);
+      // Fallback to eventsService if MongoDB fails
+      try {
+        const data = await eventsService.getEvents(sessionId, filters);
+        setEvents(data);
+      } catch (fallbackErr) {
+        setError(err.message || 'Failed to fetch events');
+        setEvents([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -50,7 +64,14 @@ export const EventProvider = ({ children }) => {
     setError(null);
 
     try {
-      const newEvent = await eventsService.createEvent(sessionId, eventData);
+      // Create in MongoDB first, fallback to eventsService
+      let newEvent;
+      try {
+        newEvent = await mongoService.createEvent(eventData);
+      } catch (mongoErr) {
+        console.warn('MongoDB create failed, using eventsService:', mongoErr);
+        newEvent = await eventsService.createEvent(sessionId, eventData);
+      }
       
       // Refresh events list
       await fetchEvents();
@@ -74,7 +95,13 @@ export const EventProvider = ({ children }) => {
     setError(null);
 
     try {
-      await eventsService.deleteEvent(sessionId, eventId);
+      // Delete from MongoDB first, fallback to eventsService
+      try {
+        await mongoService.deleteEvent(eventId);
+      } catch (mongoErr) {
+        console.warn('MongoDB delete failed, using eventsService:', mongoErr);
+        await eventsService.deleteEvent(sessionId, eventId);
+      }
       
       // Refresh events list
       await fetchEvents();

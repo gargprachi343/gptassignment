@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import useEvents from '../../hooks/useEvents';
+import Icon from '../common/Icon';
 import { CATEGORIES } from '../../utils/constants';
 import { validateEventForm } from '../../utils/validators';
 import { getTodayDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import Input from '../common/Input';
 
-/**
- * Modal component for creating new events (Admin only)
- */
 const CreateEventModal = ({ onClose, onSuccess }) => {
   const { createEvent } = useEvents();
   const [formData, setFormData] = useState({
@@ -46,13 +44,11 @@ const CreateEventModal = ({ onClose, onSuccess }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
-  // Handle Escape key to close modal
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
@@ -90,9 +86,7 @@ const CreateEventModal = ({ onClose, onSuccess }) => {
               className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-secondary-orange rounded p-1"
               aria-label="Close modal"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <Icon name="close" className="w-6 h-6" />
             </button>
           </div>
 

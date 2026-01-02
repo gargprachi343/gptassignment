@@ -1,13 +1,5 @@
 import React from 'react';
 
-/**
- * Reusable Button component
- * @param {Object} props - Component props
- * @param {string} props.variant - Button variant (primary, secondary, danger, outline)
- * @param {string} props.size - Button size (sm, md, lg)
- * @param {boolean} props.disabled - Disabled state
- * @param {React.ReactNode} props.children - Button content
- */
 const Button = ({
   variant = 'primary',
   size = 'md',

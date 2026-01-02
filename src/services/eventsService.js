@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { API_BASE_URL, API_ENDPOINTS, STORAGE_KEYS } from '../utils/constants';
+// eslint-disable-next-line no-unused-vars
+import { API_BASE_URL, STORAGE_KEYS } from '../utils/constants';
 
-// Create axios instance with default config
+// eslint-disable-next-line no-unused-vars
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -9,24 +10,7 @@ const api = axios.create({
   },
 });
 
-// Helper to get auth headers
-const getAuthHeaders = () => {
-  const sessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
-  const role = localStorage.getItem(STORAGE_KEYS.ROLE);
-  
-  return {
-    'X-Session-Id': sessionId,
-    'X-User-Role': role,
-  };
-};
-
 export const eventsService = {
-  /**
-   * Get all events with optional filters
-   * @param {string} sessionId - Session ID
-   * @param {Object} filters - Filter object (category, timeFilter)
-   * @returns {Promise<Array>} Array of events
-   */
   async getEvents(sessionId, filters = {}) {
     // TODO: Uncomment when backend is ready
     // const params = new URLSearchParams();
