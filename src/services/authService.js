@@ -1,10 +1,10 @@
 /**
  * Authentication Service
  * Handles login, logout, token storage, and API requests
+ * Now using mock data (backend removed)
  */
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001/api';
-console.log('AuthService initialized with API_BASE_URL:', API_BASE_URL);
+import mockDataService from './mockData';
 
 class AuthService {
   constructor() {
@@ -73,29 +73,51 @@ class AuthService {
    */
   async register(name, email, password, passwordConfirm) {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          passwordConfirm
-        })
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+      // Validate inputs
+      if (!name || !email || !password || !passwordConfirm) {
+        return {
+          success: false,
+          message: 'All fields are required'
+        };
       }
+
+      // Check password match
+      if (password !== passwordConfirm) {
+        return {
+          success: false,
+          message: 'Passwords do not match'
+        };
+      }
+
+      // Check if email already exists
+      const existingUser = mockDataService.findUserByEmail(email);
+      if (existingUser) {
+        return {
+          success: false,
+          message: 'Email address is already in use'
+        };
+      }
+
+      // Create new user
+      const newUser = mockDataService.createUser({
+        name: name.trim(),
+        email: email.toLowerCase(),
+        password: password,
+        role: 'user'
+      });
 
       return {
         success: true,
-        user: data.user,
-        message: data.message
+        user: {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role
+        },
+        message: 'Registration successful'
       };
 
     } catch (error) {
@@ -111,37 +133,48 @@ class AuthService {
    */
   async login(email, password) {
     try {
-      const url = `${API_BASE_URL}/auth/login`;
-      console.log('Sending login request to:', url);
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const data = await response.json();
-      console.log('Login response status:', response.status);
-      console.log('Login response data:', data);
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+      // Find user by email
+      const user = mockDataService.findUserByEmail(email);
+      
+      if (!user) {
+        return {
+          success: false,
+          message: 'Invalid email or password'
+        };
       }
 
+      // Check password (in mock, we compare directly - in real app would use bcrypt)
+      if (user.password !== password) {
+        return {
+          success: false,
+          message: 'Invalid email or password'
+        };
+      }
+
+      // Generate token
+      const token = mockDataService.generateToken(user.id);
+
+      // Prepare user response (without password)
+      const userResponse = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      };
+
       // Store token and user data
-      this.setToken(data.token);
-      this.setUser(data.user);
+      this.setToken(token);
+      this.setUser(userResponse);
 
       return {
         success: true,
-        user: data.user,
-        token: data.token,
-        expiresIn: data.expiresIn,
-        message: data.message
+        user: userResponse,
+        token: token,
+        expiresIn: 3600,
+        message: 'Login successful'
       };
 
     } catch (error) {
@@ -158,12 +191,8 @@ class AuthService {
    */
   async logout() {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        headers: this.getAuthHeader()
-      });
-
-      const data = await response.json();
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Clear stored data
       localStorage.removeItem('authToken');
@@ -173,7 +202,7 @@ class AuthService {
 
       return {
         success: true,
-        message: data.message || 'Logout successful'
+        message: 'Logged out successfully'
       };
 
     } catch (error) {
@@ -195,22 +224,30 @@ class AuthService {
    */
   async verifyToken() {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-token`, {
-        method: 'GET',
-        headers: this.getAuthHeader()
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const data = await response.json();
+      const token = this.getToken();
+      if (!token) {
+        return {
+          success: false,
+          message: 'No token found'
+        };
+      }
 
-      if (!response.ok) {
-        // Token is invalid or expired
-        this.logout();
-        throw new Error(data.message || 'Token invalid');
+      // In mock mode, token verification is simple
+      // In real app, would verify JWT on backend
+      const user = this.getUser();
+      if (!user) {
+        return {
+          success: false,
+          message: 'Token invalid'
+        };
       }
 
       return {
         success: true,
-        user: data.user,
+        user: user,
         message: 'Token is valid'
       };
 
@@ -227,28 +264,14 @@ class AuthService {
    */
   async request(endpoint, options = {}) {
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          ...this.getAuthHeader(),
-          ...options.headers
-        }
-      });
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Handle 401 unauthorized (token expired)
-        if (response.status === 401) {
-          this.logout();
-          throw new Error('Session expired. Please login again.');
-        }
-        throw new Error(data.message || 'Request failed');
-      }
-
+      // This is a mock implementation
+      // In real app, would make actual HTTP requests
       return {
         success: true,
-        data: data
+        data: {}
       };
 
     } catch (error) {
@@ -258,8 +281,16 @@ class AuthService {
       };
     }
   }
+
+  /**
+   * Get current user from localStorage
+   */
+  getCurrentUser(token) {
+    return this.getUser();
+  }
 }
 
 // Export singleton instance
-export default new AuthService();
+const authService = new AuthService();
+export default authService;
 

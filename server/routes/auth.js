@@ -189,18 +189,15 @@ router.post('/login', async (req, res) => {
 
     // Compare passwords using bcrypt (or direct comparison for mock DB)
     let isPasswordValid = false;
-    try {
-      // Try bcrypt comparison first
-      isPasswordValid = await bcrypt.compare(password, user.password);
-      console.log('[LOGIN] Bcrypt comparison result:', isPasswordValid);
-    } catch (e) {
-      // Fallback to direct comparison for mock/plain text passwords
-      console.log('[LOGIN] Bcrypt failed, trying direct comparison');
-      console.log('[LOGIN] Input password:', password);
-      console.log('[LOGIN] Stored password:', user.password);
-      isPasswordValid = password === user.password;
-      console.log('[LOGIN] Direct comparison result:', isPasswordValid);
-    }
+
+if (user.password.startsWith('$2')) {
+  // bcrypt hash (MongoDB)
+  isPasswordValid = await bcrypt.compare(password, user.password);
+} else {
+  // plain text (mock DB)
+  isPasswordValid = password === user.password;
+}
+
 
     if (!isPasswordValid) {
       console.log('[LOGIN] Password invalid');
